@@ -7,9 +7,11 @@ This project bypasses traditional geometric abstractions to model true rigid-bod
 ---
 
 ## 🚀 Key Technical Highlights
-* **High-Fidelity Physics:** Modeled physical link mass, inertia tensors, and joint friction profiles directly in Simscape Multibody, moving beyond pure kinematic animations.
-* **Control Architecture:** Designed and tuned 5 independent parallel PID controllers to handle nonlinear gravitational and inertial cross-coupling torques during transient trajectories.
-* **Coordinate-Free Kinematics:** Bypassed restrictive Denavit-Hartenberg (D-H) frame constraints by leveraging Simscape’s free 3D spatial transformations, mapping joint frames explicitly to physical CAD intersections.
+
+* **Custom High-Performance IK Solver:** Engineered a deterministic, custom analytical-geometric Inverse Kinematics solver using 3D-to-2D spatial dimensionality reduction. By projecting 3D target coordinates into a decoupled 2D planar vector system, the algorithm eliminates the high computational overhead and convergence issues of iterative numerical solvers.
+* **High-Fidelity Physical Modeling:** Modeled exact rigid-body link mass, inertia tensors, and joint friction profiles directly within Simscape Multibody, moving beyond pure geometric animations to capture realistic transient dynamics.
+* **Robust Control Architecture:** Designed and tuned 5 independent parallel PID controllers engineered to counteract non-linear gravitational loading and inertial cross-coupling torques across multi-axis trajectories.
+* **Coordinate-Free Kinematics:** Bypassed rigid, traditional Denavit-Hartenberg (D-H) framing conventions by leveraging Simscape’s free 3D spatial transformations, mapping joint frames explicitly and intuitively to physical CAD intersections.
 
 ---
 
@@ -51,7 +53,10 @@ graph LR
     class A,D highlight;
 ```
 
-1. **Inverse Kinematics (IK):** A hybrid numerical-analytical solver resolves the non-linear transcendental equations mapping the end-effector's Cartesian targets $(X,Y,Z)$ into required joint space vectors $\vec{\theta} = [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5]^T$.
+1. **Inverse Kinematics (IK) Solver:** Designed and implemented a custom analytical-geometric solver that leverages 3D-to-2D dimensionality reduction. By decomposing the 3D spatial vector of the target into a planar 2D system based on the base rotation ($\theta_1$), the non-linear transcendental equations are resolved via geometric vector systems. This approach eliminates the computational overhead of iterative numerical solvers, mapping the Cartesian target coordinates $(X, Y, Z)$ directly and deterministically to the joint space vector:
+
+$$\vec{\theta} = \begin{bmatrix} \theta_1 & \theta_2 & \theta_3 & \theta_4 & \theta_5 \end{bmatrix}^T$$
+
 2. **Trajectory Tracking:** The resolved angles feed into the parallel PID control loops as time-varying setpoints.
 
 ---
