@@ -1,0 +1,58 @@
+function [a1, a2, a3, a4, a5] = inverse_kinem(x, y, z, r1, r2)
+    base = 1.25;
+    L1 = 9.1601;
+    L2 = 8.0463;
+    L3 = 4.7889;
+    L4 = 2.0304;
+    tip = 2.5245;
+    pos = [x, y, z];
+    
+    tip_v = [sin(r2)*cos(r1), cos(r2), sin(r2)*sin(r1)]; %direction of end
+    A = tip_v * tip; %vector of end
+
+    B = pos; %target of rest of body
+   
+    L3 = L3 + L4;
+    a1 = atan2(B(3), B(1));
+    a1 = a1 + pi - 0.1098;
+    l1_v = [0, L1];
+
+    B_t = [sqrt(B(1)*B(1) + B(3)*B(3)), B(2)]; %convert to 2d problem
+    %l1 + L2 * <sin(a2), cos(a2)> + L3 * <sin(a2+a3), cos(a2+a3)> = B_t
+    
+    X_prime = B_t(1);
+    Y_prime = B_t(2) - l1_v(2);
+    
+    robot_system = @(p) [
+    L2 * sin(p(1)) + L3 * cos(p(2)) - X_prime; ... % X residual
+    L2 * cos(p(1)) + L3 * sin(p(2)) - Y_prime      % Y residual
+    ];
+    
+    initial_guess = [pi/2, pi/4];
+    options = optimoptions('fsolve', 'Display', 'off', 'Algorithm', 'levenberg-marquardt');
+
+    [angles_sol, fval, exitflag] = fsolve(robot_system, initial_guess, options);
+    fval
+    theta1 = angles_sol(1);
+    theta2 = angles_sol(2) - pi/2 + theta1;
+    theta3 = angles_sol(2);
+    
+    j1 = [L2 * sin(theta1), L2 * cos(theta1)];
+    j2 = j1 + [L3 * cos(theta3), L3 * sin(theta3)];
+    
+    figure;
+    plot([0, j1(1), j2(1)], [0, j1(2), j2(2)], '-or', 'LineWidth', 3, 'MarkerSize', 8); hold on;
+    plot(X_prime, Y_prime, 'bx', 'MarkerSize', 15, 'LineWidth', 3);
+    grid on; axis equal;
+    xlabel('X Prime (Distance from Center)'); ylabel('Y Prime (Height above L1)');
+    legend('Robot Arm Links', 'Your Target Goal');
+
+    a4 = pi;
+    rad2deg
+    a2 = theta1;
+    a3 = -theta2;
+    
+
+    a5 = pi/2 - (pi - ang);
+end
+[a1, a2, a3, a4, a5] = inverse_kinem(8, 8, 8, 0, 0);
